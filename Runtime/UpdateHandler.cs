@@ -37,6 +37,8 @@ namespace Aijai
             PlayerLoop.SetPlayerLoop(defaultPlayerLoop);
         }
 
+        public static event Action<float> OnUpdate;
+
         public static void Register(IUpdateListener listener)
         {
             m_dirty = m_listeners.Add(listener);
@@ -59,6 +61,7 @@ namespace Aijai
             {
                 m_listenersArray[i].Update(dt);
             }
+            OnUpdate?.Invoke(dt);
         }
     }
 
