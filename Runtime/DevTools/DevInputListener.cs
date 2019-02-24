@@ -16,8 +16,7 @@ namespace Aijai.DevTools
         {
             if (Debug.isDebugBuild == false)
                 return;
-
-            stringBuilder = new StringBuilder();
+            
             UpdateHandler.OnUpdate += UpdateHandler_OnUpdate;
         }
 
@@ -32,7 +31,7 @@ namespace Aijai.DevTools
             {
                 if (Input.GetKeyUp(KeyCode.Tab))
                 {
-                    stringBuilder.Clear();
+                    stringBuilder = new StringBuilder();
                     listen = true;
                 }
             }
@@ -54,7 +53,8 @@ namespace Aijai.DevTools
                     }
                     else
                     {
-                        OnDevInput?.Invoke(message);
+                        if (OnDevInput != null)
+                            OnDevInput.Invoke(message);
                     }
                 }
                 else

@@ -13,6 +13,8 @@ namespace Aijai.DevTools
     {
         [SerializeField] UnityEvent Action;
 
+
+
         override protected void OnDevInput(string[] obj)
         {
             Action.Invoke();
@@ -39,12 +41,9 @@ namespace Aijai.DevTools
     public abstract class NamedDevEventBase : DevEventBase
     {
         [SerializeField] protected string Command;
-
         
-
-        private void DevInputListener_OnDevInput(string obj)
+        override public void OnDevInputRaw(string obj)
         {
-
             var split = obj.Split(new char[] { ' ' }, 2);
             if (split[0] == Command)
             {
@@ -53,10 +52,7 @@ namespace Aijai.DevTools
                     OnDevInput(split);
                 }
             }
-            
         }
-
-        
 
         protected abstract void OnDevInput(string[] obj);
     }

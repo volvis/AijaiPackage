@@ -9,14 +9,12 @@ namespace Aijai
     public static class UpdateHandler
     {
         static HashSet<IUpdateListener> m_listeners = new HashSet<IUpdateListener>();
-        static IUpdateListener[] m_listenersArray = Array.Empty<IUpdateListener>();
+        static IUpdateListener[] m_listenersArray = new IUpdateListener[0];
         static bool m_dirty;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Start()
         {
-            Debug.Log("Aijai UpdateHandler");
-
             var custloop = new PlayerLoopSystem()
             {
                 type = typeof(UpdateHandler),
@@ -56,12 +54,15 @@ namespace Aijai
                 m_dirty = false;
                 m_listenersArray = m_listeners.ToArray();
             }
+
             float dt = Time.deltaTime;
             for (var i = 0; i < m_listenersArray.Length; i++)
             {
                 m_listenersArray[i].Update(dt);
             }
-            OnUpdate?.Invoke(dt);
+
+            if (OnUpdate != null)
+                OnUpdate.Invoke(dt);
         }
     }
 
