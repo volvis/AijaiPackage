@@ -22,8 +22,9 @@ namespace Aijai.DevTools
 
         public static event System.Action<string> OnDevInput;
 
-        static StringBuilder stringBuilder;
+        internal static StringBuilder stringBuilder;
         static bool listen;
+        static DevInputGUI gui;
 
         private static void UpdateHandler_OnUpdate(float obj)
         {
@@ -33,6 +34,9 @@ namespace Aijai.DevTools
                 {
                     stringBuilder = new StringBuilder();
                     listen = true;
+                    var go = new GameObject("DevInputGui"+Random.Range(int.MinValue, int.MaxValue));
+                    go.hideFlags = HideFlags.HideInHierarchy;
+                    gui = go.AddComponent<DevInputGUI>();
                 }
             }
             else
@@ -42,7 +46,7 @@ namespace Aijai.DevTools
                     listen = false;
                     string message = stringBuilder.ToString().Trim().ToLower();
                     
-                    Debug.Log(message);
+                    //Debug.Log(message);
                     int sceneIndex;
                     if (int.TryParse(message, out sceneIndex))
                     {
@@ -57,15 +61,37 @@ namespace Aijai.DevTools
                             OnDevInput.Invoke(message);
                     }
                 }
+                else if (Input.GetKeyUp(KeyCode.Escape))
+                {
+                    listen = false;
+                }
+                else if (Input.GetKeyDown(KeyCode.Backspace) && stringBuilder.Length > 0)
+                {
+                    stringBuilder.Length = stringBuilder.Length - 1;
+                }
                 else
                 {
                     stringBuilder.Append(Input.inputString);
+
                     if (stringBuilder.Length > 64)
                     {
                         Debug.Log("Debug message too long");
                         listen = false;
                     }
                 }
+
+                if (listen == false)
+                    GameObject.Destroy(gui.gameObject);
+            }
+        }
+
+        class DevInputGUI : MonoBehaviour
+        {
+            private void OnGUI()
+            {
+                GUILayout.BeginArea(new Rect(8, 8, 512, 50), "Dev Input", GUI.skin.window);
+                GUILayout.Label(DevInputListener.stringBuilder.ToString());
+                GUILayout.EndArea();
             }
         }
     }
