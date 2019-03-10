@@ -13,7 +13,7 @@ namespace Aijai.DevTools
 
         
 
-        public static void Log(string value, float duration = 1f)
+        public static void LogNotice(string value, float duration = 1f)
         {
             if (!Debug.isDebugBuild)
                 return;
@@ -21,11 +21,11 @@ namespace Aijai.DevTools
             LogChanged();
         }
 
-        public static void Log(string key, string value, float duration = 5f)
+        public static void LogValue(string key, object value, float duration = 10f)
         {
             if (!Debug.isDebugBuild)
                 return;
-            NamedLogs[key] = new TimedLog() { Value = value, ExpirationTime = Time.timeSinceLevelLoad + duration};
+            NamedLogs[key] = new TimedLog() { Value = value.ToString(), ExpirationTime = Time.timeSinceLevelLoad + duration};
             LogChanged();
         }
 
