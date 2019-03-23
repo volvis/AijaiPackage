@@ -10,9 +10,15 @@ namespace Aijai.DevTools
         static Dictionary<string, TimedLog> NamedLogs = new Dictionary<string, TimedLog>();
         static List<TimedLog> TimedLogs = new List<TimedLog>();
         static HashSet<string> CriticalErrors = new HashSet<string>();
+
+        static HashSet<GizmoInstance> GizmoInstances = new HashSet<GizmoInstance>();
+
         static DevGUI Instance;
 
-        
+        static Color DefaultColor = new Color(0.149f, 0.012f, 0.224f, 0.6f);
+
+
+
         /// <summary>
         /// Display temporary data on screen
         /// </summary>
@@ -47,23 +53,41 @@ namespace Aijai.DevTools
             }
         }
 
+        public static void DrawCircle(Vector3 position, float radius = 0.5f, float duration = 0.3f)
+        {
+            DrawCircle(position, radius, DefaultColor, duration);
+        }
+
+        public static void DrawCircle(Vector3 position, float radius, Color color, float duration = 0.3f)
+        {
+            GizmoInstances.Add(new GizmoInstance()
+            {
+                A = position,
+                B = Vector3.up * radius,
+                ExpirationTime = Time.timeSinceLevelLoad + duration,
+                Color = color,
+                Type = GizmoInstanceType.Circle
+            });
+            LogChanged();
+        }
+
         static void TrimLogs()
         {
             var dt = Time.timeSinceLevelLoad;
             TimedLogs = TimedLogs.Where(x => x.ExpirationTime > dt).ToList();
             NamedLogs = NamedLogs.Where(x => x.Value.ExpirationTime > dt).ToDictionary(t => t.Key, t => t.Value);
+            
             LogChanged();
         }
 
         static void LogChanged()
         {
-            bool HasLogs = (TimedLogs.Count != 0 || NamedLogs.Count != 0 || CriticalErrors.Count != 0);
+            bool HasLogs = (TimedLogs.Count != 0 || NamedLogs.Count != 0 || CriticalErrors.Count != 0 || GizmoInstances.Count != 0);
             if (Instance == null)
             {
                 if (HasLogs)
                 {
                     var go = new GameObject("[DevLogScreen]");
-                    go.hideFlags = HideFlags.HideInHierarchy;
                     Instance = go.AddComponent<DevGUI>();
                 }
             }
@@ -83,6 +107,20 @@ namespace Aijai.DevTools
             internal float ExpirationTime;
         }
 
+        enum GizmoInstanceType
+        {
+            Circle
+        }
+
+        struct GizmoInstance
+        {
+            internal GizmoInstanceType Type;
+            internal float ExpirationTime;
+            internal Vector3 A;
+            internal Vector3 B;
+            internal Color Color;
+        }
+
         class DevGUI : MonoBehaviour
         {
             GUIStyle m_style;
@@ -92,11 +130,29 @@ namespace Aijai.DevTools
             {
                 
                 m_bg = new Texture2D(1, 1);
-                m_bg.SetPixel(0, 0, new Color(0.149f, 0.012f, 0.224f, 0.6f));
+                m_bg.SetPixel(0, 0, DefaultColor);
                 m_bg.Apply();
 
                 m_style = new GUIStyle();
                 m_style.normal.background = m_bg;
+            }
+
+            private void OnDrawGizmos()
+            {
+                var c = Gizmos.color;
+                foreach (var g in GizmoInstances)
+                {
+                    Gizmos.color = g.Color;
+                    switch (g.Type)
+                    {
+                        case GizmoInstanceType.Circle:
+                            Gizmos.DrawWireSphere(g.A, g.B.y);
+                            break;
+                    }
+                }
+                Gizmos.color = c;
+
+                GizmoInstances.RemoveWhere(x => x.ExpirationTime < Time.timeSinceLevelLoad);
             }
 
             private void OnGUI()
