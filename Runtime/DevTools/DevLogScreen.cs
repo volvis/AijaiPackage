@@ -24,7 +24,7 @@ namespace Aijai.DevTools
         /// </summary>
         public static void LogNotice(string value, float duration = 1f)
         {
-            if (!Debug.isDebugBuild)
+            if (!Debug.isDebugBuild || !Application.isPlaying)
                 return;
             TimedLogs.Add(new TimedLog() { Value = value, ExpirationTime = Time.timeSinceLevelLoad + duration });
             LogChanged();
@@ -35,7 +35,7 @@ namespace Aijai.DevTools
         /// </summary>
         public static void LogValue(string key, object value, float duration = 10f)
         {
-            if (!Debug.isDebugBuild)
+            if (!Debug.isDebugBuild || !Application.isPlaying)
                 return;
             NamedLogs[key] = new TimedLog() { Value = value.ToString(), ExpirationTime = Time.timeSinceLevelLoad + duration};
             LogChanged();
